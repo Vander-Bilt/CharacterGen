@@ -37,7 +37,7 @@ def poll_image_bfl(request_id: str):
             raise ValueError(f"An error or unexpected status occurred: {request_json}")
 
 def generate_base_image_bfl(prompt: str) -> str:
-    request = requests.post(
+    response = requests.post(
         f"https://api.bfl.ai/v1/{BFL_BASE_MODEL}",
         headers={
             "accept": "application/json",
@@ -48,8 +48,17 @@ def generate_base_image_bfl(prompt: str) -> str:
             "prompt": prompt,
             "aspect_ratio": "1:1"
         }
-    ).json()
+    )
+    
+    # 检查 HTTP 状态码
+    response.raise_for_status() 
 
+    request = response.json()
+    
+    # 检查响应 JSON 是否包含 'id' 键
+    if 'id' not in request:
+        raise KeyError(f"'id' not found in API response. Full response: {request}")
+        
     request_id = request["id"]
     return request_id
 
